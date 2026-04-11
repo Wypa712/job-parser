@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from config import STATE_PATH
+from .config import STATE_PATH
 
 
 def _ensure_state_path():

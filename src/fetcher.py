@@ -1,5 +1,5 @@
 import requests
-from config import BASE_URL, REQUEST_HEADERS
+from .config import BASE_URL, REQUEST_HEADERS
 
 
 def fetch_job_page() -> str:

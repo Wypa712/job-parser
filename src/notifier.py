@@ -2,7 +2,7 @@ import asyncio
 import logging
 from telegram import Bot
 from telegram.error import TelegramError
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from .config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
 
 def send_telegram_message(text: str) -> None:

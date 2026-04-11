@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from config import BASE_URL
+from .config import BASE_URL
 import requests
-from config import REQUEST_HEADERS
+from .config import REQUEST_HEADERS
 
 
 def _safe_text(element):

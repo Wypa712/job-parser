@@ -1,5 +1,5 @@
 import logging
-from config import OPENAI_API_KEY, GROQ_API_KEY, LLM_PROVIDER
+from .config import OPENAI_API_KEY, GROQ_API_KEY, LLM_PROVIDER
 
 
 def summarize_job(job: dict) -> str:

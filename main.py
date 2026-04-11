@@ -4,12 +4,12 @@ from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from fetcher import fetch_job_page
-from parser import parse_jobs, get_full_job_description
-from storage import find_new_jobs, load_previous_state, save_state
-from llm import summarize_job
-from notifier import build_notification, send_telegram_message
-from config import SCHEDULE_TIMES
+from src.fetcher import fetch_job_page
+from src.parser import parse_jobs, get_full_job_description
+from src.storage import find_new_jobs, load_previous_state, save_state
+from src.llm import summarize_job
+from src.notifier import build_notification, send_telegram_message
+from src.config import SCHEDULE_TIMES
 
 logging.basicConfig(
     level=logging.INFO,

@@ -5,11 +5,11 @@
 """
 
 import logging
-from fetcher import fetch_job_page
-from parser import parse_jobs
-from storage import load_previous_state, find_new_jobs
-from llm import summarize_job
-from notifier import build_notification
+from .fetcher import fetch_job_page
+from .parser import parse_jobs
+from .storage import load_previous_state, find_new_jobs
+from .llm import summarize_job
+from .notifier import build_notification
 
 logging.basicConfig(
     level=logging.INFO,
