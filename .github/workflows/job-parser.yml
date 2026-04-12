@@ -40,6 +40,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "Repository status before commit:"
+          git status --short
+          echo "Diff of state.json (if any):"
+          git --no-pager diff -- data/state.json || true
           if ! git diff --quiet -- data/state.json; then
             git add data/state.json
             git commit -m "Update state.json from GitHub Actions"

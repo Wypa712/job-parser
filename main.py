@@ -28,6 +28,13 @@ def check_jobs(test_mode=False) -> None:
         jobs = parse_jobs(html)
         previous_state = load_previous_state()
         job_changes = find_changed_jobs(jobs, previous_state)
+        logging.info(
+            "Поточний стан: %d вакансій, додано=%d, оновлено=%d, вилучено=%d",
+            len(jobs),
+            len(job_changes["added"]),
+            len(job_changes["modified"]),
+            len(job_changes["removed"]),
+        )
 
         if test_mode:
             logging.info("Тестовий режим: знайдено %d вакансій на сторінці.", len(jobs))

@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 from .config import STATE_PATH
 
@@ -21,11 +22,15 @@ def build_state_payload(jobs: list[dict]) -> dict[str, dict]:
 def load_previous_state() -> dict:
     _ensure_state_path()
     if not STATE_PATH.exists():
+        logging.info("State file not found: %s", STATE_PATH)
         return {}
     try:
         with STATE_PATH.open("r", encoding="utf-8") as handle:
-            return json.load(handle)
-    except (json.JSONDecodeError, OSError):
+            state = json.load(handle)
+            logging.info("Loaded previous state with %d jobs.", len(state))
+            return state
+    except (json.JSONDecodeError, OSError) as error:
+        logging.warning("Failed to load previous state.json: %s", error)
         return {}
 
 
@@ -37,6 +42,7 @@ def save_state(jobs: list[dict]) -> None:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
         handle.flush()
     temp_path.replace(STATE_PATH)
+    logging.info("Saved state.json with %d jobs to %s", len(payload), STATE_PATH)
 
 
 def find_new_jobs(current_jobs: list[dict], previous_state: dict) -> list[dict]:
