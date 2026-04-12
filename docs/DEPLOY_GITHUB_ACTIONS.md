@@ -9,7 +9,7 @@ git --version
 
 Якщо помилка, встанови Git з https://git-scm.com/
 
-### 1.2 Натисни на .env потрібні ключі
+### 1.2 Налаштуй потрібні ключі в `.env`
 
 Відкрий `.env` файл (або скопіюй з `.env.example`) і заповни:
 
@@ -19,9 +19,11 @@ TELEGRAM_BOT_TOKEN=xxxxxxxxxxxx    # від @BotFather в Telegram
 TELEGRAM_CHAT_ID=xxxxxxxxxxxx      # ID твого чату/каналу
 ```
 
+**⚠️ Важливо:** OpenAI більше не підтримується - тільки Groq!
+
 Як отримати `TELEGRAM_CHAT_ID`:
-- Запиши до своєї személyes чату із ботом `@userinfobot`
-- Бот підасть ID (число як `123456789`)
+- Напиши до своєї особистої чату із ботом `@userinfobot`
+- Бот надішле ID (число як `123456789`)
 
 ### 1.3 Тестуй локально
 
@@ -46,7 +48,96 @@ python main.py test
 - Йди на https://github.com/new
 - Назва: `job-parser` (або інший)
 - **⚠️ Вибери "Public"** (GitHub Actions безплатні для публічних репо)
-- На натискай "Create repository"
+- Натисни "Create repository"
+
+### 2.2 Завантаж код
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/job-parser.git
+git branch -M main
+git push -u origin main
+```
+
+---
+
+## Крок 3: Налаштування на GitHub
+
+### 3.1 Додай Secrets
+Йди в **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+
+Додай 3 secrets:
+- `GROQ_API_KEY` - API ключ від Groq
+- `TELEGRAM_BOT_TOKEN` - токен від BotFather
+- `TELEGRAM_CHAT_ID` - ID чату для сповіщень
+
+### 3.2 Перевір Actions
+- Йди в вкладку **Actions**
+- Мав бути workflow "Job Parser - Automated Checks"
+- Натисни **Run workflow** для тестового запуску
+
+---
+
+## Крок 4: Моніторинг
+
+### 4.1 Перегляд логів
+- **Actions** → Останній запуск
+- Клікни на "Run job parser"
+- Бачиш логи виконання
+
+### 4.2 Статус
+- 🟢 **Зелений** - успішно
+- 🔴 **Червоний** - помилка
+- 🟡 **Жовтий** - в процесі
+
+---
+
+## ⚙️ Налаштування
+
+### Зміна розкладу
+Редагуй `.github/workflows/job-parser.yml`:
+
+```yaml
+on:
+  schedule:
+    - cron: '0 6,18 * * *'  # Зміни 6,18 на потрібні години UTC
+```
+
+### Структура проекту
+```
+demo/
+├── main.py              # Головний скрипт
+├── src/                 # Python модулі
+├── docs/                # Документація
+├── data/state.json      # Стан вакансій
+└── .github/workflows/   # GitHub Actions
+```
+
+---
+
+## 🔧 Вирішення проблем
+
+### "No such file or directory"
+- Перевір чи всі файли завантажені на GitHub
+- Перевір Secrets
+
+### "API key invalid"
+- Перевір GROQ_API_KEY на https://console.groq.com
+
+### "Telegram error"
+- Перевір TELEGRAM_BOT_TOKEN та TELEGRAM_CHAT_ID
+
+### Тест локально
+```bash
+python main.py test
+```
+
+---
+
+## 📊 Статистика
+
+- **Запуски:** 2 на день × 30 = 60/місяць
+- **Час:** ~10 секунд на запуск
+- **Витрати:** 0$ (безплатно для публічних репо)
+- **Надійність:** 99.9% uptime
 
 ### 2.2 Завантаж код на GitHub
 

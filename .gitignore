@@ -43,7 +43,7 @@ env/
 .DS_Store
 
 # Data and logs
-data/state.json
+# data/state.json  # Commented out - need to track state between GitHub Actions runs
 logs/
 *.log
 

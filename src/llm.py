@@ -1,45 +1,11 @@
 import logging
-from .config import OPENAI_API_KEY, GROQ_API_KEY, LLM_PROVIDER
+from .config import GROQ_API_KEY
 
 
 def summarize_job(job: dict) -> str:
-    if LLM_PROVIDER == "groq" and GROQ_API_KEY:
+    if GROQ_API_KEY:
         return _summarize_with_groq(job)
-    elif LLM_PROVIDER == "openai" and OPENAI_API_KEY:
-        return _summarize_with_openai(job)
     else:
-        return _fallback_summary(job)
-
-
-def _summarize_with_openai(job: dict) -> str:
-    try:
-        from openai import OpenAI
-        client = OpenAI(api_key=OPENAI_API_KEY)
-        prompt = (
-            "You are a strict job description analyzer. Extract ONLY information from the job text. "
-            "Do NOT invent, assume, or speculate. Answer in Ukrainian.\n\n"
-            "Respond in plain text (NO Markdown, NO bold, NO *, NO lists). Structure:\n"
-            "1. Specialization: [from text]\n"
-            "2. Brief description: 2-3 sentences max\n"
-            "3. Key skills: comma-separated with details\n"
-            "4. Requirements: if present, list key ones\n"
-            "5. If information is missing, say 'not specified'\n\n"
-            "Max 700 characters. Complete sentences only.\n\n"
-            f"Job Title: {job.get('title')}\n"
-            f"Company: {job.get('company')}\n"
-            f"Location: {job.get('location')}\n"
-            f"Description: {job.get('full_description') or job.get('summary')}\n"
-            f"Link: {job.get('url')}"
-        )
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=350,
-        )
-        text = response.choices[0].message.content if response.choices else None
-        return text.strip() if text else _fallback_summary(job)
-    except Exception as error:
-        logging.warning("OpenAI LLM summarization failed: %s", error)
         return _fallback_summary(job)
 
 

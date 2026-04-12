@@ -8,7 +8,6 @@ BASE_URL = "https://arbeidsplassen.nav.no/stillinger?municipal=VESTLAND.SUNNFJOR
 STATE_PATH = Path("data") / "state.json"
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")  # "openai" or "groq"
 SCHEDULE_TIMES = ["10:00", "16:00"]

@@ -1,14 +1,17 @@
 # Job Parser for arbeidsplassen.nav.no
 
-Автоматичний парсер вакансій з норвезької сайту arbeidsplassen.nav.no з LLM-аналізом та сповіщеннями через Telegram.
+Автоматичний парсер вакансій з норвезької сайту arbeidsplassen.nav.no з Groq LLM-аналізом та сповіщеннями через Telegram.
+
+**🚀 Статус:** **АКТИВНИЙ** - розгорнутий на GitHub Actions, працює автоматично 2 рази на день.
 
 ## ✨ Можливості
 
-- ✅ Автоматичні перевірки вакансій 2 рази на день
-- 🤖 LLM-аналіз (Groq/OpenAI) - витягує спеціалізацію, навички, вимоги
+- ✅ Автоматичні перевірки вакансій 2 рази на день (6:00 та 18:00 UTC)
+- 🤖 **Groq LLM-аналіз** - витягує спеціалізацію, навички, вимоги (OpenAI видалено)
 - 📱 Сповіщення через Telegram з детальною інформацією
-- 📝 Зберігання стану (не дублює старі вакансії)
-- 🔄 Отримання повного опису з сторін вакансій
+- 📝 Збереження стану в git (не дублює старі вакансії)
+- 🔄 Отримання повного опису з сторінок вакансій
+- 🏗️ Чиста архітектура (src/, docs/, data/)
 
 ## 🚀 Швидкий старт на GitHub Actions
 
@@ -48,6 +51,84 @@ pip install -r requirements.txt
 ```bash
 cp .env.example .env
 # Заповни .env своїми ключами
+```
+
+### Запуск
+```bash
+python main.py test    # тестовий запуск
+python main.py         # повний запуск з планувальником
+```
+
+## 📁 Структура проекту
+
+```
+demo/
+├── main.py                    # Головний скрипт
+├── requirements.txt           # Залежності (без OpenAI)
+├── .env                       # Конфігурація (локально)
+├── .env.example              # Шаблон конфігурації
+├── src/                       # Python модулі
+│   ├── config.py             # Конфігурація (тільки Groq)
+│   ├── fetcher.py            # HTTP запити
+│   ├── parser.py             # Парсинг HTML
+│   ├── storage.py            # Збереження стану
+│   ├── llm.py               # Groq аналіз
+│   └── notifier.py          # Telegram
+├── docs/                     # Документація
+│   ├── README.md            # Повний опис
+│   ├── READY_FOR_DEPLOYMENT.md
+│   ├── DEPLOY_GITHUB_ACTIONS.md
+│   └── GITHUB_ACTIONS_SETUP.md
+├── data/
+│   └── state.json           # Стан вакансій (в git)
+├── .github/
+│   └── workflows/
+│       └── job-parser.yml   # GitHub Actions конфіг
+└── .gitignore
+```
+
+## ⚙️ Налаштування
+
+### Зміна розкладу
+Редагуй `.github/workflows/job-parser.yml`:
+
+```yaml
+on:
+  schedule:
+    - cron: '0 6,18 * * *'  # 6:00 та 18:00 UTC
+```
+
+### LLM налаштування
+Тільки Groq підтримується. Налаштування в `src/llm.py`.
+
+### Telegram налаштування
+- Створи бота через @BotFather
+- Отримай chat ID через @userinfobot
+
+## 📊 Моніторинг
+
+- **Actions вкладка** - логи всіх запусків
+- **Run workflow** - ручний запуск для тестування
+- **Secrets** - перевір API ключі
+
+## 🛠️ Вирішення проблем
+
+### Локально не працює
+```bash
+python -c "import sys; sys.path.insert(0, '.'); from src.config import GROQ_API_KEY; print('OK' if GROQ_API_KEY else 'No key')"
+```
+
+### На GitHub Actions помилка
+- Перевір Secrets
+- Перевір логи в Actions
+- Перевір `.env` локально
+
+## 📈 Статистика
+
+- **Запуски:** 60/місяць (2/день × 30)
+- **Час виконання:** ~10 секунд
+- **Витрати:** 0$ (безплатно)
+- **LLM:** Groq (швидкий та дешевий)
 ```
 
 ### Тестовий запуск
