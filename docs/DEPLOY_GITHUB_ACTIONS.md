@@ -1,5 +1,26 @@
 # 🚀 Деплоя на GitHub Actions - Покроковий Гайд
 
+## Огляд процесу
+
+Цей гайд описує розгортання автоматичного парсера вакансій на GitHub Actions. Проект парсить сайт arbeidsplassen.nav.no, порівнює з попереднім станом, надсилає сповіщення в Telegram з LLM-аналізом, і зберігає стан у git.
+
+### Поточні помилки та їх вирішення
+
+#### 1. state.json не оновлюється на GitHub
+- **Симптом:** Після Actions run файл не змінюється в репозиторії
+- **Причина:** Локально файл змінюється, але через баг у save_state (Path.replace на Windows) diff не знаходить змін
+- **Виправлення:** Код виправлено (`os.replace`), але якщо проблема залишається — перевірити логи Actions на "No state changes to commit"
+
+#### 2. LLM-аналіз відсутній у повідомленнях
+- **Симптом:** Повідомлення приходять без аналізу, тільки заголовок
+- **Причина:** Відсутність `openai` модуля (хоча Groq використовує його API)
+- **Виправлення:** Додано `openai>=1.0` до requirements.txt
+
+#### 3. Actions падає з помилками
+- **Симптом:** Червоний статус у Actions
+- **Причина:** Мережеві помилки, rate limits сайту, відсутність залежностей
+- **Виправлення:** Перевірити логи, додати retries у коді
+
 ## Крок 1: Підготовка на локальній машині
 
 ### 1.1 Перевір, чи Git встановлений
@@ -19,7 +40,7 @@ TELEGRAM_BOT_TOKEN=xxxxxxxxxxxx    # від @BotFather в Telegram
 TELEGRAM_CHAT_ID=xxxxxxxxxxxx      # ID твого чату/каналу
 ```
 
-**⚠️ Важливо:** OpenAI більше не підтримується - тільки Groq!
+**⚠️ Важливо:** Потрібен Groq API ключ для LLM-аналізу!
 
 Як отримати `TELEGRAM_CHAT_ID`:
 - Напиши до своєї особистої чату із ботом `@userinfobot`
@@ -34,11 +55,11 @@ venv\Scripts\activate
 # Встанови залежності
 pip install -r requirements.txt
 
-# Запусти тест
+# Запусти тест (без збереження стану)
 python main.py test
 ```
 
-Мав бути БЕЗ помилок.
+Мав бути БЕЗ помилок. Лог має показувати знайдені вакансії.
 
 ---
 
@@ -65,7 +86,7 @@ git push -u origin main
 Йди в **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
 Додай 3 secrets:
-- `GROQ_API_KEY` - API ключ від Groq
+- `GROQ_API_KEY` - API ключ від Groq (обов'язково для аналізу)
 - `TELEGRAM_BOT_TOKEN` - токен від BotFather
 - `TELEGRAM_CHAT_ID` - ID чату для сповіщень
 
@@ -76,17 +97,31 @@ git push -u origin main
 
 ---
 
-## Крок 4: Моніторинг
+## Крок 4: Моніторинг та діагностика
 
 ### 4.1 Перегляд логів
-- **Actions** → Останній запуск
-- Клікни на "Run job parser"
-- Бачиш логи виконання
+- **Actions** → Останній запуск → "Run job parser"
+- Бачиш детальні логи:
+  - Завантаження стану
+  - Кількість вакансій
+  - Зміни (added/modified/removed)
+  - LLM запити
+  - Telegram відправка
+  - Збереження стану
 
 ### 4.2 Статус
-- 🟢 **Зелений** - успішно
-- 🔴 **Червоний** - помилка
+- 🟢 **Зелений** - успішно, state.json оновлено
+- 🔴 **Червоний** - помилка (перевірити логи)
 - 🟡 **Жовтий** - в процесі
+
+### 4.3 Діагностичні логи
+Після виправлень, у "Commit updated state.json" має бути:
+- `Repository status before commit:`
+- `Diff of state.json (if any):`
+- `git add data/state.json`
+- `git commit -m "Update state.json from GitHub Actions"`
+
+Якщо "No state changes to commit" — значить файл не змінився локально.
 
 ---
 
@@ -98,17 +133,17 @@ git push -u origin main
 ```yaml
 on:
   schedule:
-    - cron: '0 6,18 * * *'  # Зміни 6,18 на потрібні години UTC
+    - cron: '0 6,18 * * *'  # Зміни години UTC (6=8:00 Oslo, 18=20:00 Oslo)
 ```
 
 ### Структура проекту
 ```
 demo/
-├── main.py              # Головний скрипт
-├── src/                 # Python модулі
-├── docs/                # Документація
-├── data/state.json      # Стан вакансій
-└── .github/workflows/   # GitHub Actions
+├── main.py              # Головний скрипт з логікою перевірки
+├── src/                 # Модулі: config, fetcher, parser, storage, llm, notifier
+├── docs/                # Ця документація
+├── data/state.json      # Стан вакансій (автоматично оновлюється)
+└── .github/workflows/   # GitHub Actions конфігурація
 ```
 
 ---
@@ -117,27 +152,58 @@ demo/
 
 ### "No such file or directory"
 - Перевір чи всі файли завантажені на GitHub
-- Перевір Secrets
+- Перевір Secrets налаштовані
 
-### "API key invalid"
-- Перевір GROQ_API_KEY на https://console.groq.com
+### "API key invalid" або "No module named 'openai'"
+- Перевір `GROQ_API_KEY` на https://console.groq.com
+- Перевір чи `openai` встановлений (в requirements.txt)
 
 ### "Telegram error"
-- Перевір TELEGRAM_BOT_TOKEN та TELEGRAM_CHAT_ID
+- Перевір `TELEGRAM_BOT_TOKEN` та `TELEGRAM_CHAT_ID`
+- Бот має бути доданий до чату
+
+### state.json не оновлюється
+- Перевірити логи на "Saved state.json with X jobs"
+- Якщо є, але diff порожній — проблема з save_state
+- Якщо немає — помилка перед збереженням
+
+### Actions зависає
+- GitHub Actions має ліміт 6 годин
+- Додати timeouts у коді
 
 ### Тест локально
 ```bash
-python main.py test
+python main.py test  # тест без збереження
+python main.py       # повний запуск з планувальником
 ```
 
 ---
 
-## 📊 Статистика
+## 📊 Статистика та обмеження
 
 - **Запуски:** 2 на день × 30 = 60/місяць
-- **Час:** ~10 секунд на запуск
+- **Час:** ~10-30 секунд на запуск
 - **Витрати:** 0$ (безплатно для публічних репо)
-- **Надійність:** 99.9% uptime
+- **Надійність:** 99.9% uptime, але scraping може блокуватися
+
+### Обмеження GitHub Actions для scraping
+- Rate limits сайтів можуть блокувати IP Actions
+- Actions має обмеження на мережеві запити
+- Краще для статичних сайтів, ніж динамічних
+
+### Альтернативи
+- **VPS з cron:** надійніше, але платно ($5/місяць)
+- **Railway/Render:** безсерверні, але з sleeping
+- **Vercel Functions:** для API-based scraping
+
+---
+
+## 🚀 Після деплою
+
+1. Перевір перший run Actions
+2. Отримай тестове повідомлення в Telegram
+3. Перевірити чи state.json оновився в репозиторії
+4. Налаштуй моніторинг (email на failures)
 
 ### 2.2 Завантаж код на GitHub
 
@@ -148,6 +214,12 @@ git add .
 git commit -m "Initial job parser setup"
 git branch -M main
 git remote add origin https://github.com/YOUR_USERNAME/job-parser.git
+git push -u origin main
+```
+
+### 2.3 Перевір завантаження
+- Йди на GitHub, перевір чи всі файли є
+- Перевір чи є `.github/workflows/job-parser.yml`
 git push -u origin main
 ```
 
