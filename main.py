@@ -96,8 +96,15 @@ def schedule_jobs() -> None:
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) > 1 and sys.argv[1] == "test":
+    args = sys.argv[1:]
+
+    if args and args[0] == "test":
+        # Тестовий режим: вивести знайдені вакансії без збереження
         check_jobs(test_mode=True)
-    else:
+    elif args and args[0] == "schedule":
+        # Локальний режим з планувальником (для запуску на власному сервері/ПК)
         check_jobs()
         schedule_jobs()
+    else:
+        # Режим за замовчуванням: один запуск і вихід (GitHub Actions)
+        check_jobs()

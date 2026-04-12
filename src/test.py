@@ -77,7 +77,7 @@ def test_storage() -> None:
     """Тестує збереження та завантаження стану."""
     logging.info("Тестування storage...")
     try:
-        from storage import save_state
+        from .storage import save_state
         html = fetch_job_page()
         jobs = parse_jobs(html)
         save_state(jobs)

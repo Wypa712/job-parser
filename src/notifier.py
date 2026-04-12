@@ -12,12 +12,13 @@ def send_telegram_message(text: str) -> None:
 
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     try:
+        from telegram import LinkPreviewOptions
         asyncio.run(
             bot.send_message(
                 chat_id=TELEGRAM_CHAT_ID,
                 text=text,
                 parse_mode="HTML",
-                disable_web_page_preview=True,
+                link_preview_options=LinkPreviewOptions(is_disabled=True),
             )
         )
         logging.info("Telegram notification sent.")

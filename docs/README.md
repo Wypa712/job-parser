@@ -73,7 +73,7 @@ check_jobs():
 - Для повного опису: завантажує окрему сторінку вакансії, витягує текст
 
 #### 5. LLM (llm.py)
-- Використовує Groq API (openai-compatible)
+- Використовує Groq API (через openai-сумісний інтерфейс)
 - Аналізує повний опис вакансії за фіксованим prompt українською
 - Витягує: спеціалізація, обов'язки, навички, вимоги
 - Fallback: якщо API недоступне, повертає короткий текст з полів вакансії
@@ -87,7 +87,7 @@ check_jobs():
 - **Python 3.11+**
 - **GitHub Actions** - для автоматичних запусків та збереження стану
 - **Requests + BeautifulSoup** - для веб-скрапінгу
-- **Groq API** - для LLM аналізу (openai модуль)
+- **Groq API** — для LLM-аналізу (openai-сумісний інтерфейс)
 - **Python-telegram-bot** - для сповіщень
 - **JSON** - для збереження стану
 
@@ -168,8 +168,9 @@ check_jobs():
 ```bash
 pip install -r requirements.txt
 cp .env.example .env  # заповни ключі
-python main.py test   # тестовий запуск без збереження
-python main.py        # повний запуск з планувальником
+python main.py test      # тестовий запуск (без збереження)
+python main.py           # один запуск і вихід (GitHub Actions)
+python main.py schedule  # запуск з APScheduler (локально)
 ```
 
 ## Статистика
@@ -202,34 +203,23 @@ LLM може робити одне з наступного:
 - Налаштувати `cron` / `systemd timer` або тривалий скрипт з `APScheduler`
 - Зберігати стан у локальному файлі `data/state.json` або `sqlite`
 
-## Наступні кроки
-
-1. Створити `requirements.txt` і налаштувати середовище
-2. Реалізувати базовий `fetcher` + `parser`
-3. Додати збереження стану та порівняння
-4. Підключити Telegram-бота
-5. За бажанням — інтегрувати LLM для аналізу опису вакансій
-
 ## Як запустити
 
-1. Скопіюйте файл `.env.example` у `.env` та додайте свій Telegram токен і chat ID.
+1. Скопіюйте файл `.env.example` у `.env` та заповніть ключі API і Telegram-токен.
 2. Встановіть залежності:
    - `python -m pip install -r requirements.txt`
 3. Запустіть проєкт:
-   - `python main.py`
-4. Перевірка виконається одразу при старті, а потім за розкладом 10:00 та 16:00.
+   - `python main.py test` — тестовий режим (виводить вакансії, без збереження)
+   - `python main.py` — один запуск і вихід (для GitHub Actions)
+   - `python main.py schedule` — безперервний запуск з APScheduler (локально: 10:00/16:00 Oslo)
+4. На GitHub Actions запуски виконуються автоматично о 6:00 та 18:00 UTC (8:00 і 20:00 Oslo).
 
 ## Налаштування LLM
 
-Проєкт підтримує два провайдери LLM:
+Проєкт використовує **Groq API** для LLM-аналізу вакансій (через openai-сумісний інтерфейс).
 
-- **Groq** (рекомендовано): швидкий, безкоштовний ліміт
-  - Отримай ключ на https://groq.com
-  - В `.env` додай `GROQ_API_KEY=твій_ключ` і `LLM_PROVIDER=groq`
-
-- **OpenAI**: GPT моделі
-  - Отримай ключ на https://platform.openai.com
-  - В `.env` додай `OPENAI_API_KEY=твій_ключ` і `LLM_PROVIDER=openai`
+- Отримай ключ на https://console.groq.com
+- В `.env` додай `GROQ_API_KEY=твій_ключ`
 
 Якщо ключ відсутній, використовується fallback (без аналізу).
 
@@ -238,7 +228,7 @@ LLM може робити одне з наступного:
 Для тестування функціональності без надсилання повідомлень:
 
 - `python main.py test` — тестовий режим, виводить знайдені вакансії
-- `python test.py` — повний тест парсера
-- `python test.py fetcher` — тест тільки завантаження сторінки
-- `python test.py storage` — тест збереження/завантаження стану
-- `python test.py parser` — тест парсера та порівняння зі станом
+- `python -m src.test` — повний тест парсера
+- `python -m src.test fetcher` — тест тільки завантаження сторінки
+- `python -m src.test storage` — тест збереження/завантаження стану
+- `python -m src.test parser` — тест парсера та порівняння зі станом

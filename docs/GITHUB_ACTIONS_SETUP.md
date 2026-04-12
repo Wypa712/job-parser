@@ -99,7 +99,7 @@ on:
 ```
 
 ### LLM налаштування
-Тільки Groq підтримується. Налаштування в `src/llm.py`.
+Використовується Groq API. Налаштування в `src/llm.py`.
 
 ### Telegram налаштування
 - Створи бота через @BotFather
@@ -129,7 +129,6 @@ python -c "import sys; sys.path.insert(0, '.'); from src.config import GROQ_API_
 - **Час виконання:** ~10 секунд
 - **Витрати:** 0$ (безплатно)
 - **LLM:** Groq (швидкий та дешевий)
-```
 
 ### Тестовий запуск
 ```bash
@@ -164,7 +163,7 @@ python main.py
 - **Python 3.11+**
 - **BeautifulSoup4** - парсинг HTML
 - **Requests** - HTTP запити
-- **Groq/OpenAI** - LLM аналіз
+- **Groq API** — LLM-аналіз (openai-сумісний інтерфейс)
 - **python-telegram-bot** - сповіщення
 - **APScheduler** - планування задач
 

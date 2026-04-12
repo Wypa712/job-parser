@@ -220,10 +220,8 @@ git push -u origin main
 ### 2.3 Перевір завантаження
 - Йди на GitHub, перевір чи всі файли є
 - Перевір чи є `.github/workflows/job-parser.yml`
-git push -u origin main
-```
 
-Де `YOUR_USERNAME` - твій GitHub ник.
+Де `YOUR_USERNAME` - твій GitHub нік.
 
 ---
 
