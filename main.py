@@ -22,6 +22,7 @@ JOB_TIMEZONE = ZoneInfo("Europe/Oslo")
 
 def check_jobs(test_mode=False) -> None:
     logging.info("Починаю перевірку вакансій...")
+    jobs = None
     try:
         html = fetch_job_page()
         jobs = parse_jobs(html)
@@ -40,7 +41,6 @@ def check_jobs(test_mode=False) -> None:
 
         if not (added_jobs or modified_jobs or removed_jobs):
             logging.info("Змін у списку вакансій не виявлено.")
-            save_state(jobs)
             return
 
         if added_jobs:
@@ -57,10 +57,14 @@ def check_jobs(test_mode=False) -> None:
             summary = summarize_job(job)
             message = build_notification(job, summary)
             send_telegram_message(message)
-
-        save_state(jobs)
     except Exception as error:
         logging.exception("Помилка під час перевірки вакансій: %s", error)
+    finally:
+        if jobs is not None and not test_mode:
+            try:
+                save_state(jobs)
+            except Exception as error:
+                logging.exception("Не вдалося зберегти стан вакансій: %s", error)
 
 
 def schedule_jobs() -> None:
