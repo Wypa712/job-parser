@@ -7,7 +7,7 @@
 import logging
 from .fetcher import fetch_job_page
 from .parser import parse_jobs
-from .storage import load_previous_state, find_new_jobs
+from .storage import load_previous_state, find_new_jobs, find_changed_jobs
 from .llm import summarize_job
 from .notifier import build_notification
 
@@ -33,7 +33,13 @@ def test_parser() -> None:
 
         previous_state = load_previous_state()
         new_jobs = find_new_jobs(jobs, previous_state)
-        logging.info("Знайдено %d нових вакансій (порівняно з минулим станом).", len(new_jobs))
+        changes = find_changed_jobs(jobs, previous_state)
+        logging.info(
+            "Знайдено %d нових вакансій, %d оновлених вакансій, %d вилучених.",
+            len(changes["added"]),
+            len(changes["modified"]),
+            len(changes["removed"]),
+        )
 
         if new_jobs:
             logging.info("Нові вакансії:")

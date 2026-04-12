@@ -6,7 +6,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 from src.fetcher import fetch_job_page
 from src.parser import parse_jobs, get_full_job_description
-from src.storage import find_new_jobs, load_previous_state, save_state
+from src.storage import find_changed_jobs, load_previous_state, save_state
 from src.llm import summarize_job
 from src.notifier import build_notification, send_telegram_message
 from src.config import SCHEDULE_TIMES
@@ -26,7 +26,7 @@ def check_jobs(test_mode=False) -> None:
         html = fetch_job_page()
         jobs = parse_jobs(html)
         previous_state = load_previous_state()
-        new_jobs = find_new_jobs(jobs, previous_state)
+        job_changes = find_changed_jobs(jobs, previous_state)
 
         if test_mode:
             logging.info("Тестовий режим: знайдено %d вакансій на сторінці.", len(jobs))
@@ -34,12 +34,23 @@ def check_jobs(test_mode=False) -> None:
                 logging.info("Вакансія: %s - %s", job['title'], job['url'])
             return
 
-        if not new_jobs:
-            logging.info("Нових вакансій не знайдено.")
+        added_jobs = job_changes["added"]
+        modified_jobs = job_changes["modified"]
+        removed_jobs = job_changes["removed"]
+
+        if not (added_jobs or modified_jobs or removed_jobs):
+            logging.info("Змін у списку вакансій не виявлено.")
+            save_state(jobs)
             return
 
-        logging.info("Знайдено %d нових вакансій.", len(new_jobs))
-        for job in new_jobs:
+        if added_jobs:
+            logging.info("Знайдено %d нових вакансій.", len(added_jobs))
+        if modified_jobs:
+            logging.info("Знайдено %d оновлених вакансій.", len(modified_jobs))
+        if removed_jobs:
+            logging.info("Вилучено %d вакансій зі списку.", len(removed_jobs))
+
+        for job in added_jobs + modified_jobs:
             logging.info("Отримуємо повний опис для вакансії: %s", job['title'])
             full_description = get_full_job_description(job['url'])
             job['full_description'] = full_description
