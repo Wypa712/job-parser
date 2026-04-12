@@ -4,3 +4,4 @@ python-telegram-bot>=20.6
 APScheduler>=3.10
 python-dotenv>=1.0
 groq>=0.4
+openai>=1.0

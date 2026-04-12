@@ -41,7 +41,8 @@ def save_state(jobs: list[dict]) -> None:
     with temp_path.open("w", encoding="utf-8") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
         handle.flush()
-    temp_path.replace(STATE_PATH)
+    import os
+    os.replace(str(temp_path), str(STATE_PATH))
     logging.info("Saved state.json with %d jobs to %s", len(payload), STATE_PATH)
 
 
