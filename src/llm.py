@@ -5,8 +5,8 @@ from .config import GROQ_API_KEY
 def summarize_job(job: dict) -> str:
     if GROQ_API_KEY:
         return _summarize_with_groq(job)
-    else:
-        return _fallback_summary(job)
+    logging.warning("GROQ_API_KEY not configured, using fallback summary.")
+    return _fallback_summary(job)
 
 
 def _summarize_with_groq(job: dict) -> str:
