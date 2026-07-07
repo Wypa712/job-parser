@@ -50,6 +50,7 @@ jobs:
           if ! git diff --quiet -- data/state.json; then
             git add data/state.json
             git commit -m "Update state.json from GitHub Actions"
+            git pull --rebase origin main
             git push origin HEAD:main
           else
             echo "No state changes to commit."

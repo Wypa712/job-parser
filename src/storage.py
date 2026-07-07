@@ -4,6 +4,8 @@ from pathlib import Path
 from .config import STATE_PATH
 
 STATE_FIELDS = ("id", "title", "company", "location", "published", "summary", "url")
+# Only these fields trigger a "modified" notification — volatile fields like summary are excluded
+_CHANGE_DETECTION_FIELDS = ("title", "company", "location")
 
 
 def _ensure_state_path():
@@ -58,7 +60,14 @@ def find_changed_jobs(current_jobs: list[dict], previous_state: dict) -> dict[st
     previous_ids = set(previous_state.keys())
 
     added = [current_state[job_id] for job_id in sorted(current_ids - previous_ids)]
-    modified = [current_state[job_id] for job_id in sorted(current_ids & previous_ids) if current_state[job_id] != previous_state[job_id]]
+    modified = [
+        current_state[job_id]
+        for job_id in sorted(current_ids & previous_ids)
+        if any(
+            current_state[job_id].get(f) != previous_state[job_id].get(f)
+            for f in _CHANGE_DETECTION_FIELDS
+        )
+    ]
     removed = sorted(previous_ids - current_ids)
 
     return {
